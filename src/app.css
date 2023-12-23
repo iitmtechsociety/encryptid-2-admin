@@ -1,0 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/* Apply default app style */
+body {
+  font-family: 'Bricolage Grotesque', sans-serif;
+}
