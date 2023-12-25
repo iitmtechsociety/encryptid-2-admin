@@ -1,7 +1,8 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
+    import { Copy } from "lucide-svelte";
     import type { PageData } from "./$types";
-    let selectValue = "None";
+    let selectValue = "Show All";
     let statusFilterValue: boolean = true;
     let usernameFilterValue: string;
     let emailFilterValue: string;
@@ -42,7 +43,7 @@
 
 <span class="font-bold ml-4 mr-4">Filters</span>
 <select class="select max-w-xs select-accent" bind:value={selectValue}>
-    <option>None</option>
+    <option>Show All</option>
     <option>Username</option>
     <option>Email</option>
     <option>Level</option>
@@ -90,9 +91,27 @@
         >
     {/if}
 {/if}
-{#if selectValue !== "None" && selectValue !== "Status"}
+{#if selectValue !== "Show All" && selectValue !== "Status"}
     <button class="btn btn-accent" on:click={refreshFilteredList}>Apply</button>
 {/if}
+<br /><br />
+<span class="ml-4 text-lg mt-4">
+    Showing <b>{filteredList.length}</b> of <b>{data["userList"].length}</b>
+    {#if data["userList"].length === 1}
+        user.
+    {:else}
+        users.
+    {/if}
+    {#if selectValue !== "Show All"}
+        <a
+            class="link link-accent"
+            on:click={() => {
+                selectValue = "Show All";
+                refreshFilteredList();
+            }}>Reset Filters</a
+        >
+    {/if}
+</span>
 <div class="overflow-x-auto">
     <table class="table">
         <!-- head -->
@@ -109,8 +128,50 @@
         <tbody>
             {#each filteredList as user}
                 <tr>
-                    <td>{user.username}</td>
-                    <td>{user.email}</td>
+                    <td>
+                        <div
+                            class="tooltip cursor-pointer"
+                            id={`username_${user.userId}`}
+                            data-tip="Copy Username"
+                            on:click={() => {
+                                navigator.clipboard.writeText(user.username);
+                                const tooltip = document.getElementById(
+                                    `username_${user.userId}`,
+                                );
+                                tooltip?.setAttribute("data-tip", "Copied!");
+                                setTimeout(() => {
+                                    tooltip?.setAttribute(
+                                        "data-tip",
+                                        "Copy Username",
+                                    );
+                                }, 2000);
+                            }}
+                        >
+                            {user.username}
+                        </div>
+                    </td>
+                    <td
+                        ><div
+                            class="tooltip"
+                            id={`email_${user.userId}`}
+                            data-tip="Copy Email"
+                            on:click={() => {
+                                navigator.clipboard.writeText(user.email);
+                                const tooltip = document.getElementById(
+                                    `email_${user.userId}`,
+                                );
+                                tooltip?.setAttribute("data-tip", "Copied!");
+                                setTimeout(() => {
+                                    tooltip?.setAttribute(
+                                        "data-tip",
+                                        "Copy Email",
+                                    );
+                                }, 2000);
+                            }}
+                        >
+                            {user.email}
+                        </div></td
+                    >
                     <td>Level {user.level}</td>
                     <td>{user.points} PTS</td>
                     <td>
@@ -126,11 +187,6 @@
                     </td>
                     <td>
                         <button
-                            class="btn btn-secondary font-bold"
-                            on:click={() => goto(`/logs/${user.userId}`)}
-                            >Logs</button
-                        >
-                        <button
                             class="btn btn-error font-bold"
                             on:click={() => {
                                 const dialog = document.getElementById(
@@ -138,6 +194,20 @@
                                 );
                                 dialog.showModal();
                             }}>Ban</button
+                        >
+                        <div class="tooltip" data-tip="Copy User ID">
+                            <button
+                                class="btn btn-primary font-bold"
+                                on:click={() =>
+                                    navigator.clipboard.writeText(user.userId)}
+                            >
+                                Copy ID
+                            </button>
+                        </div>
+                        <button
+                            class="btn btn-secondary font-bold"
+                            on:click={() => goto(`/logs/${user.userId}`)}
+                            >View Logs</button
                         >
                     </td>
                 </tr>
