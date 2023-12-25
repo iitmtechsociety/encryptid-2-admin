@@ -1,7 +1,8 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
-    import { Copy } from "lucide-svelte";
     import type { PageData } from "./$types";
+    import { sendErrorToast, sendSuccessToast } from "$lib/utils";
+    import { page } from "$app/stores";
     let selectValue = "Show All";
     let statusFilterValue: boolean = true;
     let usernameFilterValue: string;
@@ -113,7 +114,7 @@
     {/if}
 </span>
 <div class="overflow-x-auto">
-    <table class="table">
+    <table class="table table-lg">
         <!-- head -->
         <thead>
             <tr>
@@ -187,50 +188,155 @@
                     </td>
                     <td>
                         <button
-                            class="btn btn-error font-bold"
+                            class="btn btn-primary font-bold"
+                            id={`copy_${user.userId}`}
                             on:click={() => {
-                                const dialog = document.getElementById(
-                                    `delete_${user.userId}`,
+                                navigator.clipboard.writeText(user.userId);
+                                const btn = document.getElementById(
+                                    `copy_${user.userId}`,
                                 );
-                                dialog.showModal();
-                            }}>Ban</button
+                                btn.innerHTML = "Copied!";
+                                btn?.classList.add("btn-success");
+                                setTimeout(() => {
+                                    btn.innerHTML = "Copy ID";
+                                    btn?.classList.remove("btn-success");
+                                }, 2000);
+                            }}
                         >
-                        <div class="tooltip" data-tip="Copy User ID">
-                            <button
-                                class="btn btn-primary font-bold"
-                                on:click={() =>
-                                    navigator.clipboard.writeText(user.userId)}
-                            >
-                                Copy ID
-                            </button>
-                        </div>
+                            Copy ID
+                        </button>
+
                         <button
                             class="btn btn-secondary font-bold"
                             on:click={() => goto(`/logs/${user.userId}`)}
                             >View Logs</button
                         >
+                        {#if user.banned}
+                            <button
+                                class="btn btn-success font-bold"
+                                on:click={() => {
+                                    const dialog = document.getElementById(
+                                        `unban_${user.userId}`,
+                                    );
+                                    dialog.showModal();
+                                }}>Unban</button
+                            >
+                            <dialog id={`unban_${user.userId}`} class="modal">
+                                <div class="modal-box">
+                                    <h3 class="font-bold text-lg">
+                                        Confirm Unban
+                                    </h3>
+                                    <p class="py-4">
+                                        Are you sure you want to unban <br />
+                                        <kbd>{user.username}</kbd>?
+                                    </p>
+                                    <div class="modal-action">
+                                        <form method="dialog">
+                                            <!-- if there is a button in form, it will close the modal -->
+                                            <button class="btn btn-neutral mr-4"
+                                                >Cancel</button
+                                            >
+                                            <button
+                                                class="btn btn-success"
+                                                on:click={async () => {
+                                                    const res = await fetch(
+                                                        `/api/unban`,
+                                                        {
+                                                            method: "POST",
+                                                            headers: {
+                                                                "Content-Type":
+                                                                    "application/json",
+                                                            },
+                                                            body: JSON.stringify(
+                                                                {
+                                                                    userId: user.userId,
+                                                                },
+                                                            ),
+                                                        },
+                                                    );
+                                                    if (res.ok) {
+                                                        sendSuccessToast(
+                                                            "Success",
+                                                            `${user.username} has been unbanned.`,
+                                                        );
+                                                        // window.location.reload();
+                                                        user.banned = false;
+                                                    } else {
+                                                        sendErrorToast(
+                                                            "Error",
+                                                            `Failed to unban ${user.username}.`,
+                                                        );
+                                                    }
+                                                }}>Unban User</button
+                                            >
+                                        </form>
+                                    </div>
+                                </div>
+                            </dialog>
+                        {:else}
+                            <button
+                                class="btn btn-error font-bold"
+                                on:click={() => {
+                                    const dialog = document.getElementById(
+                                        `ban_${user.userId}`,
+                                    );
+                                    dialog.showModal();
+                                }}>Ban</button
+                            >
+                            <dialog id={`ban_${user.userId}`} class="modal">
+                                <div class="modal-box">
+                                    <h3 class="font-bold text-lg">
+                                        Confirm Ban
+                                    </h3>
+                                    <p class="py-4">
+                                        Are you sure you want to ban <br />
+                                        <kbd>{user.username}</kbd>?
+                                    </p>
+                                    <div class="modal-action">
+                                        <form method="dialog">
+                                            <!-- if there is a button in form, it will close the modal -->
+                                            <button class="btn btn-neutral mr-4"
+                                                >Cancel</button
+                                            >
+                                            <button
+                                                class="btn btn-error"
+                                                on:click={async () => {
+                                                    const res = await fetch(
+                                                        `/api/ban`,
+                                                        {
+                                                            method: "POST",
+                                                            headers: {
+                                                                "Content-Type":
+                                                                    "application/json",
+                                                            },
+                                                            body: JSON.stringify(
+                                                                {
+                                                                    userId: user.userId,
+                                                                },
+                                                            ),
+                                                        },
+                                                    );
+                                                    if (res.ok) {
+                                                        sendSuccessToast(
+                                                            "Success",
+                                                            `${user.username} has been banned.`,
+                                                        );
+                                                        user.banned = true;
+                                                    } else {
+                                                        sendErrorToast(
+                                                            "Error",
+                                                            `Failed to ban ${user.username}.`,
+                                                        );
+                                                    }
+                                                }}>Ban User</button
+                                            >
+                                        </form>
+                                    </div>
+                                </div>
+                            </dialog>
+                        {/if}
                     </td>
                 </tr>
-                <dialog id={`delete_${user.userId}`} class="modal">
-                    <div class="modal-box">
-                        <h3 class="font-bold text-lg">Confirm Ban</h3>
-                        <p class="py-4">
-                            Are you sure you want to ban <br />
-                            <kbd>{user.username}</kbd>?
-                        </p>
-                        <div class="modal-action">
-                            <form method="dialog">
-                                <!-- if there is a button in form, it will close the modal -->
-                                <button class="btn btn-primary">Cancel</button>
-                                <button
-                                    class="btn btn-error"
-                                    on:click={() => console.log("ban user")}
-                                    >Ban User</button
-                                >
-                            </form>
-                        </div>
-                    </div>
-                </dialog>
             {/each}
         </tbody>
     </table>
