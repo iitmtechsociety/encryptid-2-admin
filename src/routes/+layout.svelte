@@ -11,8 +11,10 @@
   import { page } from "$app/stores";
   import { FirebaseApp } from "sveltefire";
   import { auth, firestore, storage, rtdb } from "$lib/firebase";
-  import { FlatToast, ToastContainer } from "svelte-toasts";
-
+  import { FlatToast, ToastContainer, toasts } from "svelte-toasts";
+  import { uploadBytes, ref as storageRef } from "firebase/storage";
+  import { v4 as uuidv4 } from "uuid";
+  import { sendErrorToast, sendSuccessToast } from "$lib/utils";
   let files: FileList = [];
   let images: FileList = [];
   let codeComment = "";
@@ -28,19 +30,80 @@
   const setCodeComment = (event) => {
     codeComment = event.target.value;
   };
-
-  const createQuestion = () => {
+  let busy = false;
+  const createQuestion = async () => {
     if (!title || !prompt) {
       return;
     }
-    const question = {
+    busy = true;
+    const levelId = uuidv4();
+    const level = {
+      levelId,
       title,
       prompt,
       codeComment,
-      files,
-      images,
+      files: Array.from(files).map((file) => {
+        const fileId = uuidv4();
+        const newFileName = `${fileId}.${file.name.split(".").pop()}`;
+        const ref = `levels/${levelId}/${newFileName}`;
+        const fData = {
+          path: ref,
+          fileId: fileId,
+          name: newFileName,
+        };
+        return fData;
+      }),
+      images: Array.from(images).map((image) => {
+        const imageId = uuidv4();
+        const newFileName = `${imageId}.${image.name.split(".").pop()}`;
+        const ref = `levels/${levelId}/${newFileName}`;
+        const fData = {
+          path: ref,
+          fileId: imageId,
+          name: newFileName,
+        };
+        return fData;
+      }),
     };
-    console.log(question);
+
+    if (files.length > 0) {
+      // write a for loop
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const filePath = level.files[0].path;
+        const ref = storageRef(storage, filePath);
+        const result = await uploadBytes(ref, file);
+        console.log(result);
+      }
+    }
+    if (images.length > 0) {
+      // write a for loop
+      for (let i = 0; i < images.length; i++) {
+        const image = images[i];
+        const filePath = level.images[0].path;
+        const ref = storageRef(storage, filePath);
+        const result = await uploadBytes(ref, image);
+        console.log(result);
+      }
+    }
+
+    const r = await fetch("/api/levels", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(level),
+    });
+    if (r.status !== 200) {
+      sendErrorToast(
+        "Failed to create level",
+        `Server responded with ${r.status}`,
+      );
+    } else {
+      sendSuccessToast("Level Created", ":)");
+    }
+
+    console.log(level);
   };
 </script>
 
@@ -180,7 +243,9 @@
           <!-- if there is a button in form, it will close the modal -->
 
           <button class="btn btn-neutral">Close</button>
-          <button class="btn btn-primary font-bold">Create</button>
+          <button class="btn btn-primary font-bold" on:click={createQuestion}
+            >Create</button
+          >
         </form>
       </div>
     </div>
