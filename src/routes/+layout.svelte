@@ -14,7 +14,7 @@
   import { FlatToast, ToastContainer, toasts } from "svelte-toasts";
   import { uploadBytes, ref as storageRef } from "firebase/storage";
   import { v4 as uuidv4 } from "uuid";
-  import { sendErrorToast, sendSuccessToast } from "$lib/utils";
+  import { sendErrorToast, sendInfoToast, sendSuccessToast } from "$lib/utils";
   let files: FileList = [];
   let images: FileList = [];
   let codeComment = null;
@@ -36,6 +36,24 @@
     return;
     codeComment = event.target.value;
   };
+
+  const clearFields = () => {
+    files = [];
+    images = [];
+    codeComment = undefined;
+    title = "";
+    prompt = "";
+    answer = "";
+    const titleField = document.getElementById("title");
+    const promptField = document.getElementById("prompt");
+    const answerField = document.getElementById("answer");
+    const codeCommentField = document.getElementById("codeComment");
+    titleField.value = "";
+    promptField.value = "";
+    answerField.value = "";
+    codeCommentField.value = "";
+  };
+
   let busy = false;
   const createQuestion = async () => {
     if (!title || !prompt) {
@@ -49,31 +67,40 @@
       prompt,
       codeComment,
       answer,
-      files: Array.from(files).map((file) => {
-        const fileId = uuidv4();
-        const newFileName = `${fileId}.${file.name.split(".").pop()}`;
-        const ref = `levels/${levelId}/${newFileName}`;
-        const fData = {
-          path: ref,
-          fileId: fileId,
-          name: newFileName,
-        };
-        return fData;
-      }),
-      images: Array.from(images).map((image) => {
-        const imageId = uuidv4();
-        const newFileName = `${imageId}.${image.name.split(".").pop()}`;
-        const ref = `levels/${levelId}/${newFileName}`;
-        const fData = {
-          path: ref,
-          fileId: imageId,
-          name: newFileName,
-        };
-        return fData;
-      }),
+      files:
+        files.length === 0
+          ? []
+          : Array.from(files).map((file) => {
+              const fileId = uuidv4();
+              const newFileName = `${fileId}.${file.name.split(".").pop()}`;
+              const ref = `levels/${levelId}/${newFileName}`;
+              const fData = {
+                path: ref,
+                fileId: fileId,
+                name: newFileName,
+              };
+              return fData;
+            }),
+      images:
+        images.length === 0
+          ? []
+          : Array.from(images).map((image) => {
+              const imageId = uuidv4();
+              const newFileName = `${imageId}.${image.name.split(".").pop()}`;
+              const ref = `levels/${levelId}/${newFileName}`;
+              const fData = {
+                path: ref,
+                fileId: imageId,
+                name: newFileName,
+              };
+              return fData;
+            }),
     };
-
     if (files.length > 0) {
+      sendInfoToast(
+        `Uploading ${files.length} files to storage...`,
+        "This may take a while",
+      );
       // write a for loop
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
@@ -82,8 +109,13 @@
         const result = await uploadBytes(ref, file);
         console.log(result);
       }
+      sendSuccessToast("Files Uploaded", ":)");
     }
     if (images.length > 0) {
+      sendInfoToast(
+        `Uploading ${files.length} files to storage...`,
+        "This may take a while",
+      );
       // write a for loop
       for (let i = 0; i < images.length; i++) {
         const image = images[i];
@@ -92,8 +124,8 @@
         const result = await uploadBytes(ref, image);
         console.log(result);
       }
+      sendSuccessToast("Images Uploaded", ":)");
     }
-
     const r = await fetch("/api/levels", {
       method: "POST",
       headers: {
@@ -151,13 +183,7 @@
       <button
         class="btn btn-primary btn-outline ml-4"
         on:click={() => {
-          files = [];
-          images = [];
-          codeComment = "";
-          title = "";
-          prompt = "";
-          answer = "";
-
+          clearFields();
           const modal = document.getElementById("new_level_modal");
           modal.showModal();
         }}
@@ -178,6 +204,7 @@
           </span>
         </div>
         <input
+          id="title"
           type="text"
           placeholder="Title"
           class="input input-bordered w-full max-w-xs"
@@ -191,6 +218,7 @@
           >
         </div>
         <input
+          id="prompt"
           type="text"
           placeholder="Prompt"
           class="input input-bordered w-full max-w-xs"
@@ -246,6 +274,7 @@
           <span class="label-text">Code Comment</span>
         </div>
         <input
+          id="codeComment"
           type="text"
           placeholder="Code Comment"
           class="input input-bordered w-full max-w-xs"
@@ -260,6 +289,7 @@
           >
         </div>
         <input
+          id="answer"
           type="text"
           placeholder="Answer"
           class="input input-bordered w-full max-w-xs"

@@ -20,3 +20,14 @@ export const sendErrorToast = (title: string,subtitle: string) => {
         showProgress: true,
     });
 }
+
+export const sendInfoToast = (title: string, subtitle: string) => {
+    toasts.add({
+        title,
+        description: subtitle,
+        duration: 3000,
+        type: 'info',
+        theme: 'dark',
+        showProgress: true,
+    });
+}
