@@ -17,7 +17,7 @@
   import { sendErrorToast, sendSuccessToast } from "$lib/utils";
   let files: FileList = [];
   let images: FileList = [];
-  let codeComment = "";
+  let codeComment = null;
   let title = "";
   let prompt = "";
   let answer = "";
@@ -33,6 +33,7 @@
     prompt = event.target.value;
   };
   const setCodeComment = (event) => {
+    return;
     codeComment = event.target.value;
   };
   let busy = false;
@@ -248,6 +249,7 @@
           type="text"
           placeholder="Code Comment"
           class="input input-bordered w-full max-w-xs"
+          disabled
           on:input={setCodeComment}
         />
       </label>
