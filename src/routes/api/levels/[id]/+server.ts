@@ -8,18 +8,21 @@ export async function DELETE({ params }) {
         const doc = await transaction.get(adminDB.collection('levels').doc(params.id));
             if (!doc.exists) throw error(400, 'Level does not exist');
             const data = doc.data();
-            if (data.files.length > 0) { 
-                data.files.forEach(async (file) => {
-                    await adminStorage.bucket().file(file.path).delete();
-                });
-            }
-            if (data.images.length > 0) { 
-                data.images.forEach(async (image) => {
-                    await adminStorage.bucket().file(image.path).delete();
-                });
-            }
+            try {
+                if (data.files.length > 0) {
+                    data.files.forEach(async (file) => {
+                        await adminStorage.bucket().file(file.path).delete().catch((e) => console.log(e));
+                    });
+                }
+                if (data.images.length > 0) {
+                    data.images.forEach(async (image) => {
+                        await adminStorage.bucket().file(image.path).delete().catch((e) => console.log(e));
+                    });
+                }
             
-            
+            } catch (e) {
+                console.log(e);
+            }
         await transaction.delete(doc.ref);
         await transaction.update(adminDB.collection('index').doc('metrics'), {
             levels: FieldValue.increment(-1),

@@ -20,6 +20,11 @@
   let codeComment = "";
   let title = "";
   let prompt = "";
+  let answer = "";
+
+  const setAnswer = (event) => {
+    answer = event.target.value;
+  };
 
   const setTitle = (event) => {
     title = event.target.value;
@@ -42,6 +47,7 @@
       title,
       prompt,
       codeComment,
+      answer,
       files: Array.from(files).map((file) => {
         const fileId = uuidv4();
         const newFileName = `${fileId}.${file.name.split(".").pop()}`;
@@ -144,6 +150,13 @@
       <button
         class="btn btn-primary btn-outline ml-4"
         on:click={() => {
+          files = [];
+          images = [];
+          codeComment = "";
+          title = "";
+          prompt = "";
+          answer = "";
+
           const modal = document.getElementById("new_level_modal");
           modal.showModal();
         }}
@@ -236,6 +249,19 @@
           placeholder="Code Comment"
           class="input input-bordered w-full max-w-xs"
           on:input={setCodeComment}
+        />
+      </label>
+      <label class="form-control w-full max-w-xs">
+        <div class="label">
+          <span class="label-text"
+            >Answer <span class="text-red-400">*</span></span
+          >
+        </div>
+        <input
+          type="text"
+          placeholder="Answer"
+          class="input input-bordered w-full max-w-xs"
+          on:input={setAnswer}
         />
       </label>
       <div class="modal-action">
