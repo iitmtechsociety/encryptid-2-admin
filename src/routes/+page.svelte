@@ -1,7 +1,6 @@
 <script lang="ts">
-    </script>
+</script>
 
-<h1>
-    Login
-    
-</h1>
+<center>
+    <h1 class="text-9xl">🔀🚦</h1>
+</center>
