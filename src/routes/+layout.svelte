@@ -141,6 +141,7 @@
     } else {
       sendSuccessToast("Level Created", ":)");
     }
+    busy = false;
 
     console.log(level);
   };
@@ -183,13 +184,18 @@
       <button
         class="btn btn-primary btn-outline ml-4"
         on:click={() => {
+          if (busy) return;
           clearFields();
           const modal = document.getElementById("new_level_modal");
           modal.showModal();
         }}
       >
-        <Plus />
-        Create Level
+        {#if !busy}
+          <Plus />
+          Create Level
+        {:else}
+          <span class="loading loading-infinity loading-lg"></span>
+        {/if}
       </button>
     {/if}
   </div>
