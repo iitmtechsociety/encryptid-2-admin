@@ -5,7 +5,7 @@
     import { Download, Eye, EyeOff, Image, Link } from "lucide-svelte";
     import { sendErrorToast, sendSuccessToast } from "$lib/utils";
     const collectionRef = collection(firestore, "levels");
-    const q = query(collectionRef, orderBy("levelId", "desc"));
+    const q = query(collectionRef, orderBy("createdAt", "asc"));
     const store = collectionStore(firestore, q);
     let showAnswers: boolean = false;
     let showImageID: string = "";
@@ -31,29 +31,33 @@
     </button>
 </div>
 <br />
-{#each $store as level, index}
-    <div class="overflow-x-auto">
-        <table class="table">
-            <!-- head -->
-            <thead>
-                <tr>
-                    <th></th>
-                    <th>Title</th>
-                    <th>Question</th>
-                    <th>Code Comment</th>
-                    <th>Files</th>
-                    <th>Images</th>
-                    <th>Answer</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
+<div class="overflow-x-auto">
+    <table class="table">
+        <!-- head -->
+        <thead>
+            <tr>
+                <th></th>
+                <th>Title</th>
+                <th>Question</th>
+                <th>Code Comment</th>
+                <th>Files</th>
+                <th>Images</th>
+                <th>Answer</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {#each $store as level, index}
                 <!-- row 1 -->
                 <tr>
                     <th>{index + 1}</th>
                     <td>{level.title}</td>
                     <td>{level.prompt}</td>
-                    <td>{level.codeComment}</td>
+                    <td
+                        >{#if level.codeComment === undefined || level.codeComment === ""}<i
+                                >No Code Comment</i
+                            >{:else}{level.codeComment}{/if}</td
+                    >
                     <td
                         ><div
                             class="badge badge-secondary cursor-pointer hover:badge-outline"
@@ -83,9 +87,7 @@
                         </div></td
                     >
 
-                    <td
-                        >{#if showAnswers}{level.answer}{:else}Answer Hidden{/if}</td
-                    >
+                    <td class:blur={showAnswers === false}>{level.answer}</td>
 
                     <td>
                         <button
@@ -259,10 +261,8 @@
                         </div>
                     </div>
                 </dialog>
-            </tbody>
-        </table>
-    </div>
-    <!-- <span>{count} Levels</span>
+
+                <!-- <span>{count} Levels</span>
     {#each data as level}
         <span>{level.levelId}</span>
         <button
@@ -277,4 +277,7 @@
             }}>DELETE</button
         >
     {/each} -->
-{/each}
+            {/each}
+        </tbody>
+    </table>
+</div>
