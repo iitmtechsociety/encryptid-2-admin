@@ -30,6 +30,7 @@
 		"lucide-svelte": "^0.300.0",
 		"postcss": "^8.4.32",
 		"svelte-fusioncharts": "^1.0.0",
+		"svelte-time": "^0.8.2",
 		"svelte-toasts": "^1.1.2",
 		"sveltefire": "^0.4.3",
 		"uuid": "^9.0.1"
