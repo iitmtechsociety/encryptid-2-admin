@@ -1,11 +1,13 @@
 <script lang="ts">
     import {
         Check,
+        CheckCircle,
         CircleSlash,
         Cross,
         Expand,
         PlusCircle,
         X,
+        XCircle,
     } from "lucide-svelte";
     import type { PageData } from "../$types";
     import Time from "svelte-time";
@@ -114,13 +116,21 @@
                 <div class="timeline-middle">
                     {#if log.type === "pass"}
                         <PlusCircle class="text-success" />
-                    {:else}
+                    {:else if log.type === "completed"}
+                        <CheckCircle class="text-success" />
+                        {:else if log.type === "banned"}
                         <CircleSlash class="text-error" />
+                    {:else}
+                        <XCircle class="text-error" />
                     {/if}
                 </div>
                 <div class="timeline-end timeline-box">
                     {#if log.type === "pass"}
                         Advanced to Level {log.nextLevel}
+                    {:else if log.type === "completed"}
+                     All Levels Completed
+                    {:else if log.type === "banned"}
+                        Banned
                     {:else}
                         <span class="font-bold"
                             >Failed Level {log.currentLevel}</span
