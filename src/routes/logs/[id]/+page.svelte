@@ -118,8 +118,10 @@
                         <PlusCircle class="text-success" />
                     {:else if log.type === "completed"}
                         <CheckCircle class="text-success" />
-                        {:else if log.type === "banned"}
+                        {:else if log.type === "ban"}
                         <CircleSlash class="text-error" />
+                        {:else if log.type === "unban"}
+                        <CircleSlash class="text-green" />
                     {:else}
                         <XCircle class="text-error" />
                     {/if}
@@ -129,8 +131,10 @@
                         Advanced to Level {log.nextLevel}
                     {:else if log.type === "completed"}
                      All Levels Completed
-                    {:else if log.type === "banned"}
+                    {:else if log.type === "ban"}
                         Banned
+                        {:else if log.type === "unban"}
+                        Unbanned
                     {:else}
                         <span class="font-bold"
                             >Failed Level {log.currentLevel}</span

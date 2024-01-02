@@ -11,8 +11,15 @@ export async function POST({ request }) {
         if (!doc.exists) throw error(404, 'User not found');
         const user = doc.data();
         if (!user.banned) throw error(400, 'User already unbanned');
-            await transaction.update(doc.ref, { banned: false }); 
-            await transaction.update(adminDB.collection('index').doc('metrics'), {
+        const unbanLog = {
+            type: 'unban',
+            timestamp: Date.now(),
+        };
+             transaction.update(doc.ref, { banned: false, logs: FieldValue.arrayUnion(unbanLog) }); 
+            transaction.update(adminDB.collection('index').doc('users'), {
+                banned: FieldValue.arrayRemove(userId),
+            });
+             transaction.update(adminDB.collection('index').doc('metrics'), {
                 banned: FieldValue.increment(-1),
             });
         });
