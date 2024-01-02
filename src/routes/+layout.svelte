@@ -33,14 +33,13 @@
     prompt = event.target.value;
   };
   const setCodeComment = (event) => {
-    return;
     codeComment = event.target.value;
   };
 
   const clearFields = () => {
     files = [];
     images = [];
-    codeComment = undefined;
+    codeComment = null;
     title = "";
     prompt = "";
     answer = "";
@@ -284,7 +283,7 @@
           type="text"
           placeholder="Code Comment"
           class="input input-bordered w-full max-w-xs"
-          disabled
+          
           on:input={setCodeComment}
         />
       </label>
