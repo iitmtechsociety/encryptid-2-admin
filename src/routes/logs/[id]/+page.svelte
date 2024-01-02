@@ -121,7 +121,7 @@
                         {:else if log.type === "ban"}
                         <CircleSlash class="text-error" />
                         {:else if log.type === "unban"}
-                        <CircleSlash class="text-green" />
+                        <CircleSlash class="text-success" />
                     {:else}
                         <XCircle class="text-error" />
                     {/if}
