@@ -33,6 +33,7 @@
 		"svelte-time": "^0.8.2",
 		"svelte-toasts": "^1.1.2",
 		"sveltefire": "^0.4.3",
-		"uuid": "^9.0.1"
+		"uuid": "^9.0.1",
+		"xlsx": "https://cdn.sheetjs.com/xlsx-0.20.1/xlsx-0.20.1.tgz"
 	}
 }

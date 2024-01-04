@@ -17,13 +17,30 @@ export async function POST({ request }) {
             type: 'ban',
             timestamp: Date.now(),
         };
-            transaction.update(doc.ref, { banned: true,logs: FieldValue.arrayUnion(banLog) });
-            transaction.update(adminDB.collection('index').doc('users'), {
-                banned: FieldValue.arrayUnion(userId),
+        const lb_updater_task = {
+            timestamp: Date.now(),
+            newLevel: 1,
+            newPoints: 0,
+            userId: userId,
+
+        }
+            transaction.update(doc.ref, { banned: true,logs: FieldValue.arrayUnion(banLog),
+                oldLevel: user.level,
+                oldPoints: user.points,
+                level: 1,
+                points: 0,
             });
+            transaction.update(adminDB.collection('index').doc('users'), {
+                banned: FieldValue.arrayUnion(userId),  
+            });
+
             transaction.update(adminDB.collection('index').doc('metrics'), {
                 banned: FieldValue.increment(1),
+                
             })
+            transaction.update(adminDB.collection('index').doc('leaderboard_task_queue'),{
+                jobs: FieldValue.arrayUnion(lb_updater_task),   
+            });
     });
         return json({ success: true });
     } catch (e) {
